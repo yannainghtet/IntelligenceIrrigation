@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+	<title>Smart Irrigation System</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<!-- JQuery links  -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+	<script src="http://code.highcharts.com/highcharts.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+    <!-- <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.css"/>
+    <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <script src="http://code.jquery.com/mobile/1.4.0/jquery.mobile-1.4.0.min.js"></script> -->
+
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" rel="stylesheet">
+    
+   
+    <style>
+        .canvas {
+            background-color: rgb(205, 243, 220);
+        }
+
+        body {
+        width: 80%;
+        margin: auto;
+        text-align: center;
+        font-family: Arial;
+        top: 50%;
+        left: 50%;
+        }
+
+        @media screen and (max-width: 800px) {
+        body {
+            width: 100%;
+        }
+        }
+
+        table {
+        margin-left: auto;
+        margin-right: auto;
+        }
+
+        div {
+        margin-left: auto;
+        margin-right: auto;
+        }
+
+        h2 { font-size: 2.5rem; }
+
+        .header {
+        padding: 1rem;
+        margin: 0 0 2rem 0;
+        background: #f2f2f2;
+        }
+
+        h1 {
+        font-size: 2rem;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        text-transform: uppercase;
+        }
+
+        .content {
+        display: flex;
+        }
+
+        @media screen and (max-width: 500px) /* Mobile */ {
+        .content {
+            flex-direction: column;
+        }
+        }
+
+        .mask {
+        position: relative;
+        overflow: hidden;
+        display: block;
+        width: 12.5rem;
+        height: 6.25rem;
+        margin: 1.25rem;
+        }
+
+        .semi-circle {
+        position: relative;
+        display: block;
+        width: 12.5rem;
+        height: 6.25rem;
+        background: linear-gradient(to right, #3498db 0%, #05b027 33%, #f1c40f 70%, #c0392b 100%);
+        border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
+        }
+
+        .semi-circle::before {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        z-index: 2;
+        display: block;
+        width: 8.75rem;
+        height: 4.375rem;
+        margin-left: -4.375rem;
+        background: #fff;
+        border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
+        }
+
+        .semi-circle--mask {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 12.5rem;
+        height: 12.5rem;
+        background: transparent;
+        transform: rotate(120deg) translate3d(0, 0, 0);
+        transform-origin: center center;
+        backface-visibility: hidden;
+        transition: all 0.3s ease-in-out;
+        }
+
+        .semi-circle--mask::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0%;
+        z-index: 2;
+        display: block;
+        width: 12.625rem;
+        height: 6.375rem;
+        margin: -1px 0 0 -1px;
+        background: #f2f2f2;
+        border-radius: 50% 50% 50% 50% / 100% 100% 0% 0%;
+        }
+
+        .gauge--2 .semi-circle { background: #3498db; }
+
+        .gauge--2 .semi-circle--mask { transform: rotate(20deg) translate3d(0, 0, 0); }
+
+        #tableReadings { border-collapse: collapse; }
+
+        #tableReadings td, #tableReadings th {
+        border: 1px solid #ddd;
+        padding: 10px;
+        }
+
+        #tableReadings tr:nth-child(even){ background-color: #f2f2f2; }
+
+        #tableReadings tr:hover { background-color: #ddd; }
+
+        #tableReadings th {
+        padding: 10px;
+        background-color: #2f4468;
+        color: white;
+        }
+
+        /* The switch - the box around the slider */
+        .switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+        }
+
+        /* Hide default HTML checkbox */
+        .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        }
+
+        /* The slider */
+        .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: .4s;
+        transition: .4s;
+        }
+
+        .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: .4s;
+        transition: .4s;
+        }
+
+        input:checked + .slider {
+        background-color: #2196F3;
+        }
+
+        input:focus + .slider {
+        box-shadow: 0 0 1px #2196F3;
+        }
+
+        input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+        }
+
+        /* Rounded sliders */
+        .slider.round {
+        border-radius: 34px;
+        }
+
+        .slider.round:before {
+        border-radius: 50%;
+        }
+    </style>
+    
+</head>
+  <body>
+    <div class="container-fluid">
+        <br>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card mb-3">
+                    <!-- <div class="card-header">
+                     
+                    </div> -->
+                    <div id="block1" class="container">
+                        <h1 class="display-4 text-center mb-5 mt-4"><strong class="text-success"> Smart Irrigation System <span class="text-secondary">HEC</span> </strong></h1>
+
+                        <h3 class="text-center mb-5"><strong class="text-primary"> Field-1 </strong></h3>
+                        <div class="row" id="auto" >
+                            <div class="col-md-6">
+                                <div class="form-group row item-center">
+                                    <label for="cpday" class="col-sm-3 col-form-label">Length (m)</label>
+                                    <div class="col-sm-9">
+                                        <input id="length" type="number" class="form-control" placeholder="Only number">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group row input-field">
+                                    <label for="cpday" class="col-sm-3 col-form-label">Width (m)</label>
+                                    <div class="col-sm-9 input">
+                                        <input id="width" onkeyup="countArea()" type="number" class="form-control" placeholder="Only number">
+                                    </div>
+                                </div>
+                            </div>  
+                        </div>
+                        
+
+                      
+
+                        <div class="row">
+
+                            <div class="col-md-6">
+                                <div class="form-group row item-center">
+                                    <label for="cpday" class="col-sm-3 col-form-label">Crop Type</label>
+                                    <div class="col-sm-9">
+                                        <select id="crop_type" class="form-control">
+                                            <option value="0" selected>Groun Nut</option>
+                                            <option value="1">Tomato</option>
+                                            <option value="2">Maize</option>
+                                            <option value="3">Potato</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <script>
+                                document.getElementById("crop_type").value = "{{hidden_crop_type}}";
+                                
+                            </script>
+                            <div class="col-md-6">
+                                <div class="d-flex justify-content-center">
+                                    <div class="spinner-border" 
+                                         role="status" id="loading">
+                                        <span class="sr-only">Loading...</span>
+                                    </div>
+                                </div>
+                            
+                                <div class="form-group row input-field">
+                                    <label for="cpday" class="col-sm-3 col-form-label">Initial Date:</label>
+                                    <div class="col-sm-9 input">
+                                    
+                                        <input onkeyup="countDiff()" id="int_date" type="text" class="form-control" value="{{ hidden_date }}" placeholder="Format = December 28, 2022">
+
+                                    </div>
+                                </div>
+                                
+
+                            </div>  
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col-sm-3">
+                                <h4 class="text-muted">Temperature : <strong class="text-dark" id="temp1"></strong> °C</h4>
+                            </div>   
+                            <div class="col-sm-3">
+                                <h4 class="text-muted">Humidity : <strong class="text-dark" id="hum1"></strong> %</h4>
+                            </div> 
+                            <div class="col-sm-3">
+                                <h4 class="text-muted">Soil Moisture : <strong class="text-dark" id="soilm1"></strong> %</h4>
+                            </div>
+                            <div class="col-sm-3">
+                                <h4 class="text-muted">Area : <strong class="text-dark" id="area">{{area}} m<sup>2</sup></strong></h4>
+                            </div>  
+                        </div>
+                            <!-- <div class="mb-5">
+                                <h3 class="Temp">Temperature: <strong id="temp1"> </strong> °C </h3>
+                                <h3 class="Hum">Humidity: <strong id="hum1">  </strong> % </h3>
+                                <h3 class="Soilm">Soil Moisture: <strong id="soilm1">  </strong> % </h3>
+                                <h4 class="text-primary text-center">Your Area is <strong id="area">{{area}} m<sup>2</sup></strong></h4>
+
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br> <hr>
+
+
+        <section class="content">
+            
+        <div class="box gauge--1">
+        <h3>TEMPERATURE</h3>
+              <div class="mask">
+              <div class="semi-circle"></div>
+              <div class="semi-circle--mask"></div>
+            </div>
+            <p style="font-size: 30px;" id="tempi"></p>
+            
+            <table cellspacing="5" cellpadding="5">
+                <tr>
+                    <th colspan="3">Temperature readings</th>
+                </tr>
+                <tr>
+                    <td>Min</td>
+                    <td>Max</td>
+                    <td>Mean Temp</td>
+                    
+                </tr>
+                <tr>
+                    <td id="min"> &deg;C</td>
+                    <td id="max">&deg;C</td>
+                    <td id="avg"> &deg;C</td>
+                    
+                </tr>
+            </table>
+        </div>
+        <div class="box gauge--2">
+            <h3>SOILMOISTURE</h3>
+            <div class="mask">
+                <div class="semi-circle"></div>
+                <div class="semi-circle--mask"></div>
+            </div>
+            <p style="font-size: 30px;" id="hum$">--</p> 
+            <table cellspacing="5" cellpadding="5">
+                <tr>
+                    <th colspan="3">Soilmoisture readings</th>
+                </tr>
+                <!-- <tr>
+                    <td>Min</td>
+                    <td>Max</td>
+                    <td>Mean</td>
+                </tr>
+                <tr>
+                    <td> %</td>
+                    <td> %</td>
+                    <td> %</td>
+                </tr> -->
+            </table>
+        </div>
+    </section> 
+
+
+   
+
+   <hr>
+            <!-- input field -->
+            <div class="card-body">
+                <h1 class="text-center">Prediction of Water Amount</h1>
+                <!-- <p class="text-center"> Enter your Environment Variables Values</p> -->
+                <form action="/" method="POST">
+                    
+
+                    <input type="text" name="hidden_crop_type" id="hidden_crop_type" hidden value="">
+                    <input type="text" name="hidden_date" id="hidden_date" hidden value="">
+                    
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label for="cpday" class="col-sm-3 col-form-label">Crop Day:</label>
+                                <div class="col-sm-9">
+                                    <input readonly value="{{ cpday }}" name="cpday" type="text" class="form-control" id="cpday" placeholder="Crop Life">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="sm" class="col-sm-3 col-form-label">Soil Moisture:</label>
+                                <div class="col-sm-9">
+                                    <input readonly name="sm" type="text" class="form-control" id="sm" placeholder="Soil Moisture">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="temp" class="col-sm-3 col-form-label">Temperature:</label>
+                                <div class="col-sm-9">
+                                    <input readonly name="temp" type="text" class="form-control" id="temp" placeholder="Temperature">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="humi" class="col-sm-3 col-form-label">Humidity:</label>
+                                <div class="col-sm-9">
+                                    <input readonly name="humi" readonly type="text" class="form-control" id="humi" placeholder="Humidity">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="humi" class="col-sm-3 col-form-label">Area (m<sup>2</sup>):</label>
+                                <div class="col-sm-9">
+                                    <input readonly name="area" value="{{ area }}" readonly type="text" class="form-control" id="area_result_input" placeholder="Humidity">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label for="tempmax" class="col-sm-3 col-form-label">Max Temp:</label>
+                                <div class="col-sm-9">
+                                    <input readonly name="tempmax" type="text" class="form-control" id="tempmax" placeholder="TemperatureMax">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="tempmin" class="col-sm-3 col-form-label">Min Temp:</label>
+                                <div class="col-sm-9">
+                                    <input readonly name="tempmin" type="text" class="form-control" id="tempmin" placeholder="TemperatureMin">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="evapo" class="col-sm-3 col-form-label">Evapotranspiration</label>
+                                <div class="col-sm-9">
+                                    <input readonly  name="evapo" type="text" step="any" class="form-control" id="evapo" placeholder="Evapotranspiration">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label for="cpfactor" class="col-sm-3 col-form-label">Crop Factor:</label>
+                                <div class="col-sm-9">
+                                    <input readonly name="cpfactor" value="{{ cpfactor }}" type="text" step="any" class="form-control" id="cpfactor" placeholder="Crop Factor">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                        <!-- <input type="submit"> -->
+                        <button type="submit" id="re_submit" class="btn btn-primary btn-block">Submit</button>
+                </form>
+                <br>
+                
+                <h4 class="text-danger text-center"><strong>Result</strong></h4>
+                        <div class="row">
+                            <div class="col-sm-4">
+                                <h5 class="text-muted">Predicted Water Amount : <br><strong class="text-dark text-primary" id="water_amount">{{ n }} mm/day</strong> </h5>
+                            </div>   
+                            <div class="col-sm-5">
+                                <h5 class="text-muted">Duration to switch on the water pump : <br><strong class="text-dark text-primary"><span id="duration_time">{{ timeduration }}</span> Min</strong></h5>
+                            </div>
+                            <div class="col-sm-3">
+                                <form>
+                                    <input name="flip" hidden type="text" value="" id="other">
+                                </form>
+
+                                <h5 class="text-muted">Water Pump Status : <span id="countdown" class="text-success"></span><br></h5>
+            
+                                <button onclick="showStuff('answer1', 'btnOne');" id="btnOne" style="display: block;" class="btn btn-success btn-sm btn-block mb-2">On</button>
+            
+                                <button onclick="showRe('answer1', 'btnOne');" id="answer1" style="display: none;" class="btn btn-danger btn-sm btn-block mb-2">Off</button>
+            
+                            </div>
+                        </div>
+                <!-- <div class="form-group row">
+                    <label for="evapo" class="col-sm-6 col-form-label text-right"> </label>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" id="water_amount" value="{{ n }}">
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="evapo" class="col-sm-4 col-form-label text-left">mm/day</label>
+                    </div>
+                </div>
+                
+                <div class="form-group row">
+                    <label for="evapo" class="col-sm-6 col-form-label text-right">Duration to switch on the water pump  = </label>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control" id="duration_time" value="{{ time }}">
+                    </div>
+                    <div class="col-sm-3">
+                        <label for="evapo" class="col-sm-4 col-form-label text-left">Min</label>
+                    </div>
+                </div> -->
+                
+                <!-- <h3 class="text-primary"> Duration to switch on the water pump = <span class="text-danger" id="duration"></span></h3> -->
+
+                <div class="card mb-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card-body">
+                                <h3>Recommended Irrigation Type : <strong class="text-danger" id="show_result"></strong></h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <form action="/livedata" method="POST">
+                    <button type="submit" class="btn btn-primary btn-block">Live Sensor Data</button>
+                </form>
+                <hr>
+                <form action="/field2" method="POST">
+                    <button type="submit" class="btn btn-primary ">To Field 2</button>
+                   </form>
+            </div>  
+
+                
+                
+
+        <!-- All Scripts -->
+
+        <script>
+            var vvv = "{{ hidden_crop_type }}";
+            var show_result = document.getElementById('show_result');
+            if (vvv == 0) {
+                show_result.innerHTML = "Drip & Sprinkler Irrigation";
+            }else if(vvv == 1){
+                show_result.innerHTML = "Sprinkler Irrigation";
+            }else if(vvv == 2){
+                show_result.innerHTML = "Drip Irrigation";
+            }else if(vvv == 3){
+                show_result.innerHTML = "Furrow Irrigation";
+            }
+        </script>
+
+
+                <script>
+                    var duration = parseFloat(document.getElementById('duration_time').innerHTML);
+                    // console.log(duration.toFixed(2));
+                    const startingMinutes = duration.toFixed(2);
+                    // console.log(startingMinutes);
+                    let time = parseInt(startingMinutes * 60);
+                    const countdownEt = document.getElementById('countdown');
+
+                    setInterval(updatedCountdown, 1000);
+
+                    function updatedCountdown(){
+                        const minutes = Math.floor(time/60);
+                        let seconds = time % 60;
+                        // let miliseconds = time % 6000;
+                        
+                        seconds = seconds < 10 ? '0' + seconds : seconds;
+
+                        countdownEt.innerHTML = minutes + ":" + seconds;
+                        time--;
+                        if (countdownEt.innerHTML == "0:00"){
+                            document.getElementById('countdown').style.display = 'none';
+
+//  to restart submit button                            
+                            countDiff();
+                            setTimeout(() => document.getElementById('re_submit').click(),10000); 
+                        }
+                    }
+
+                    var flip = document.getElementById("other");
+                    // console.log(parseFloat(duration));
+
+                    if (duration == 0.0) {
+                        flip.setAttribute('value', 'off');
+                        $.getJSON('/_led', {state:"off"});
+                        document.getElementById('answer1').style.display = 'block';
+                        document.getElementById('btnOne').style.display = 'none';
+
+                        
+                    }else if(duration > 0.0){
+                        flip.setAttribute('value', 'on');
+                        $.getJSON('/_led', {state:"on"});
+
+                        // setTimeout( function showStuff() {
+                    
+                        // }, 10000);
+
+                        setTimeout(() => {
+                            document.getElementById('answer1').style.display = 'block';
+                            document.getElementById('btnOne').style.display = 'none';
+                            document.getElementById('other').setAttribute('value', "off");
+                            $.getJSON('/_led', {state:"off"});
+                        }, duration * 60000)
+
+                    }
+
+
+                
+                        
+                </script>
+
+
+            <!-- calculate area -->
+                <script>
+
+                    function countArea() {
+                        var length = document.getElementById('length').value;
+                        var width = document.getElementById('width').value;
+
+                        var area = length * width;
+
+                        // var area_output = document.getElementById('area');
+                        document.getElementById('area').innerHTML = area + " m<sup>2</sup>";
+
+                        document.getElementById('area_result_input').setAttribute('value', area);
+                        
+                    }
+                </script>
+                
+            <!-- get API -->
+                <script>
+                    // api url
+                    // const baseUrl = "http://dataservice.accuweather.com/currentconditions/v1/";
+                    const api_url =
+                        "http://dataservice.accuweather.com/forecasts/v1/daily/1day/244113?apikey=%09ym3nIInDoYrcJdWxTtKavm3ug1OVkhY8&metric=true";
+
+                    // Defining async function
+                    async function getapi(url) {
+                        
+                        // Storing response
+                        const response = await fetch(url);
+                        
+                        // Storing data in form of JSON
+                        var data = await response.json();
+                        
+                    
+                        if (response) {
+                            hideloader();
+                        }
+                        show(data);
+                        
+                    }
+
+                    // Calling that async function
+                    getapi(api_url);
+                    
+
+                    // Function to hide the loader
+                    function hideloader() {
+                        document.getElementById('loading').style.display = 'none';
+                    }
+                   
+                    function show(data) {
+                        for(let r of data.DailyForecasts){
+                            var tpmin = r.Temperature.Minimum.Value;
+                            var tpmax = r.Temperature.Maximum.Value;
+                            var tpmean = (tpmax - tpmin)/2;
+
+                            // var a = 0.46 * tpmean; //3.082
+                            // var b = a + 8; //11.082
+                            // var evap = b * 0.25;
+                            // console.log(evap);
+                            var evap = (0.25 * ((0.46 * tpmean) + 8));
+                            //var evap = (0.25*(0.46 * tpmean +8)); this calculation is wrong
+                            
+                           
+                            
+                        }
+
+                        
+                        // Setting innerHTML as tab variable
+                        document.getElementById("max").innerHTML = tpmax+"&degC";
+                        document.getElementById("min").innerHTML = tpmin+"&degC";
+                        document.getElementById("avg").innerHTML = tpmean.toFixed(2)+"&degC";
+                        //document.getElementById("evapo").innerHTML = evap;
+
+                        tempmax.setAttribute("value", tpmax);
+                        tempmin.setAttribute("value", tpmin);
+                        evapo.setAttribute("value", evap);
+                        
+                        
+                    }
+
+                </script>
+            
+            <!-- count days -->
+                <script>
+                    
+                   function countDiff(){
+
+                        var input_date = document.getElementById('int_date');
+                        var start = new Date(int_date.value);
+                        var current = new Date();
+                        diff = 0;
+                        days = 1000 * 60 * 60 * 24;
+                        diff = current-start;
+                        
+
+                        difDate = Math.floor(diff / days);
+
+                       
+                        var cpday = document.getElementById('cpday');
+                        cpday.setAttribute("value", difDate);
+
+                        var crop_type = document.getElementById('crop_type');
+
+                        var cpfactor = document.getElementById('cpfactor');
+
+                        document.getElementById('hidden_crop_type').setAttribute('value', crop_type.value);
+                        document.getElementById('hidden_date').setAttribute('value', input_date.value);
+
+                        if (difDate < 29) {
+                            
+                            switch (crop_type.value) {
+                                case '0':
+                                    cpfactor.setAttribute("value", 0.45);
+                                    break;
+                                case '1':
+                                    cpfactor.setAttribute("value", 0.45);
+                                    break;
+
+                                case '2':
+                                    cpfactor.setAttribute("value", 0.40);
+                                    break;
+
+                                case '3':
+                                    cpfactor.setAttribute("value", 0.45);
+                                    break;
+                            
+                                default:
+                                    break;
+                            }
+                            
+                        }else if(30 < difDate < 69){
+                            switch (crop_type.value) {
+                                case '0':
+                                    cpfactor.setAttribute("value", 0.75);
+                                    break;
+                                case '1':
+                                    cpfactor.setAttribute("value", 0.75);
+                                    break;
+
+                                case '2':
+                                    cpfactor.setAttribute("value", 0.80);
+                                    break;
+
+                                case '3':
+                                    cpfactor.setAttribute("value", 0.75);
+                                    break;
+                            
+                                default:
+                                    break;
+                            }
+                        }
+                        else if(70 < difDate < 114){
+                            switch (crop_type.value) {
+                                case '0':
+                                    cpfactor.setAttribute("value", 1.05);
+                                    break;
+                                case '1':
+                                    cpfactor.setAttribute("value", 1.15);
+                                    break;
+
+                                case '2':
+                                    cpfactor.setAttribute("value", 1.15);
+                                    break;
+
+                                case '3':
+                                    cpfactor.setAttribute("value", 1.15);
+                                    break;
+                            
+                                default:
+                                    break;
+                            }
+                        }
+                        else if(115 < difDate < 140){
+                            switch (crop_type.value) {
+                                case '0':
+                                    cpfactor.setAttribute("value", 0.7);
+                                    break;
+                                case '1':
+                                    cpfactor.setAttribute("value", 0.8);
+                                    break;
+
+                                case '2':
+                                    cpfactor.setAttribute("value", 1.0);
+                                    break;
+
+                                case '3':
+                                    cpfactor.setAttribute("value", 0.85);
+                                    break;
+                            
+                                default:
+                                    break;
+                            }
+                        }
+
+                        
+
+                    }
+                
+                    
+                </script>
+
+            <!-- ON / Off btn -->
+                <script>
+                    function showStuff(id, x) {
+                        document.getElementById(id).style.display = 'block';
+                        document.getElementById(x).style.display = 'none';
+                        document.getElementById('other').setAttribute('value', "off");
+                        $.getJSON('/_led', {state:"off"});
+                    }
+                    function showRe(id, x) {
+                        document.getElementById(id).style.display = 'none';
+                        document.getElementById(x).style.display = 'block';
+                        document.getElementById('other').setAttribute('value', "on");
+                        $.getJSON('/_led', {state:"on"});
+                    }
+                </script>
+
+            <!-- data fetching -->
+                <script>
+        
+                    const source= new EventSource("/temp-data");
+                    const source2 = new EventSource("/hum-data");
+                    const source3 = new EventSource("/soil-data");
+                    const sourceall = source + source2 + source3;
+            
+                    source.onmessage = function (eventdata) {
+                    const data = JSON.parse(eventdata.data);
+                    var value1 = data.value;
+            
+                    
+                    setTemperature(value1);
+                
+                    function setTemperature(curVal){
+                        
+                        var minTemp = -5.0;
+                        var maxTemp = 38.0;
+                        var newVal = scaleValue(curVal, [minTemp, maxTemp], [0, 180]);
+                        $('.gauge--1 .semi-circle--mask').attr({
+                            style: '-webkit-transform: rotate(' + newVal + 'deg);' +
+                            '-moz-transform: rotate(' + newVal + 'deg);' +
+                            'transform: rotate(' + newVal + 'deg);'
+                        });
+                        $("#temp").text(curVal + ' ºC');
+                    }
+                    function scaleValue(value, from, to) {
+                        var scale = (to[1] - to[0]) / (from[1] - from[0]);
+                        var capped = Math.min(from[1], Math.max(from[0], value)) - from[0];
+                        return ~~(capped * scale + to[0]);
+                    }
+                    
+                    document.getElementById('temp1').innerHTML = data.value;
+                    document.getElementById('tempi').innerHTML = data.value+"&degC";
+                    // document.getElementById('tempzero').setAttribute('value', data.value);
+                    
+            
+                    var temp = document.getElementById('temp');
+                    temp.setAttribute("value", data.value);
+                    }
+            
+                    source2.onmessage = function (eventdata2) {
+                    const data2 = JSON.parse(eventdata2.data);
+                    document.getElementById('hum1').innerHTML = data2.value;
+                   
+            
+                    var humi = document.getElementById('humi');
+                    humi.setAttribute("value", data2.value);
+                    }
+            
+                    source3.onmessage = function (eventdata3) {
+                    const data3 = JSON.parse(eventdata3.data);
+                    document.getElementById('hum$').innerHTML = data3.value+" %";
+
+                    var value2 = data3.value;
+                    setHumidity(value2);
+            
+                    function setHumidity(curVal){
+                        //set range for Humidity percentage 0 % to 100 %
+                        var minHumi = 370;
+                        var maxHumi = 1000;
+                
+                        var newVal = scaleValue(curVal, [minHumi, maxHumi], [180, 0]);
+                        $('.gauge--2 .semi-circle--mask').attr({
+                            style: '-webkit-transform: rotate(' + newVal + 'deg);' +
+                            '-moz-transform: rotate(' + newVal + 'deg);' +
+                            'transform: rotate(' + newVal + 'deg);'
+                        });
+                        $("#humi").text(curVal + ' %');
+                    }
+            
+                    function scaleValue(value, from, to) {
+                        var scale = (to[1] - to[0]) / (from[1] - from[0]);
+                        var capped = Math.min(from[1], Math.max(from[0], value)) - from[0];
+                        return ~~(capped * scale + to[0]);
+                    }
+            
+                    document.getElementById('soilm1').innerHTML = data3.value;
+            
+                    var sm = document.getElementById('sm');
+                    if (data3.value > 600) {
+                        sm.setAttribute("value", data3.value);
+                    }else{
+                        sm.setAttribute("value", 0);
+                    }
+            
+                }
+                    
+                </script>
+            
+            <!-- refresh -->
+                <script>
+                    $(document).ready( function(){
+                        $('#auto').load('load.php');
+                        // refresh();
+                        });
+                
+                        function refresh()
+                        {
+                        setTimeout( function() {
+                        $('#auto').fadeOut('slow').load('load.php').fadeIn('slow');
+                        refresh();
+                        }, 10000);
+                    }
+                </script>
+        <!-- All Scripts -->
+                
+</html>

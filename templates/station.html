@@ -1,0 +1,123 @@
+<!--
+  Rui Santos
+  Complete project details at https://RandomNerdTutorials.com/cloud-weather-station-esp32-esp8266/
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files.
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+-->
+
+<!DOCTYPE html>
+<html>
+    <head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    </head>
+    <header class="header">
+        <h1>📊 ESP Weather Station</h1>
+        <form method="get">
+            <input type="number" name="readingsCount" min="1" placeholder="Number of readings (<?php echo $readings_count; ?>)">
+            <input type="submit" value="UPDATE">
+        </form>
+    </header>
+<body>
+    <section class="content">
+	    <div class="box gauge--1">
+	    <h3>TEMPERATURE</h3>
+              <div class="mask">
+			  <div class="semi-circle"></div>
+			  <div class="semi-circle--mask"></div>
+			</div>
+		    <p style="font-size: 30px;" id="temp">--</p>
+		    <table cellspacing="5" cellpadding="5">
+		        <tr>
+		            <th colspan="3">Temperature readings</th>
+	            </tr>
+		        <tr>
+		            <td>Min</td>
+                    <td>Max</td>
+                    <td>Average</td>
+                </tr>
+                <tr>
+                    <td> &deg;C</td>
+                    <td>&deg;C</td>
+                    <td> &deg;C</td>
+                </tr>
+            </table>
+        </div>
+        <div class="box gauge--2">
+            <h3>HUMIDITY</h3>
+            <div class="mask">
+                <div class="semi-circle"></div>
+                <div class="semi-circle--mask"></div>
+            </div>
+            <p style="font-size: 30px;" id="humi">--</p>
+            <table cellspacing="5" cellpadding="5">
+                <tr>
+                    <th colspan="3">Humidity  readings</th>
+                </tr>
+                <tr>
+                    <td>Min</td>
+                    <td>Max</td>
+                    <td>Average</td>
+                </tr>
+                <tr>
+                    <td> %</td>
+                    <td> %</td>
+                    <td> %</td>
+                </tr>
+            </table>
+        </div>
+    </section>
+
+
+    <script>
+        var value1 = 20;
+        var value2 = 50;
+        setTemperature(value1);
+        setHumidity(value2);
+    
+        function setTemperature(curVal){
+            //set range for Temperature in Celsius -5 Celsius to 38 Celsius
+            var minTemp = -5.0;
+            var maxTemp = 38.0;
+            //set range for Temperature in Fahrenheit 23 Fahrenheit to 100 Fahrenheit
+            //var minTemp = 23;
+            //var maxTemp = 100;
+    
+            var newVal = scaleValue(curVal, [minTemp, maxTemp], [0, 180]);
+            $('.gauge--1 .semi-circle--mask').attr({
+                style: '-webkit-transform: rotate(' + newVal + 'deg);' +
+                '-moz-transform: rotate(' + newVal + 'deg);' +
+                'transform: rotate(' + newVal + 'deg);'
+            });
+            $("#temp").text(curVal + ' ºC');
+        }
+    
+        function setHumidity(curVal){
+            //set range for Humidity percentage 0 % to 100 %
+            var minHumi = 0;
+            var maxHumi = 100;
+    
+            var newVal = scaleValue(curVal, [minHumi, maxHumi], [0, 180]);
+            $('.gauge--2 .semi-circle--mask').attr({
+                style: '-webkit-transform: rotate(' + newVal + 'deg);' +
+                '-moz-transform: rotate(' + newVal + 'deg);' +
+                'transform: rotate(' + newVal + 'deg);'
+            });
+            $("#humi").text(curVal + ' %');
+        }
+    
+        function scaleValue(value, from, to) {
+            var scale = (to[1] - to[0]) / (from[1] - from[0]);
+            var capped = Math.min(from[1], Math.max(from[0], value)) - from[0];
+            return ~~(capped * scale + to[0]);
+        }
+    </script>
+    
+</body>
+</html>
